@@ -10,19 +10,20 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.litespring.beans.BeanDefinition;
+import org.litespring.beans.factory.BeanCreationException;
+import org.litespring.beans.factory.BeanDefinitionStoreException;
 import org.litespring.beans.factory.BeanFactory;
 import org.litespring.util.ClassUtils;
 
-public class Defaultbeanfactory implements BeanFactory {
+public class DefaultBeanfactory implements BeanFactory {
 
-	public static final String ID_ATTRIBUTE="id";
-	public static final String CLASS_ATTRIBUTE="class";
-	private final Map<String,BeanDefinition> beanDefinitionMap=
-			new ConcurrentHashMap<String, BeanDefinition>() ;
-
-	public Defaultbeanfactory(String configFile) {
+	private static final String ID_ATTRIBUTE="id";
+	private static final String CLASS_ATTRIBUTE="class";
+	public final Map<String,BeanDefinition> beanDefinitionMap=
+			new ConcurrentHashMap<String,BeanDefinition>();
+	
+	public DefaultBeanfactory(String configFile) {
 		loadBeanDefinition(configFile);
-		
 	}
 
 	private void loadBeanDefinition(String configFile) {
@@ -32,22 +33,23 @@ public class Defaultbeanfactory implements BeanFactory {
 			is=cl.getResourceAsStream(configFile);
 			SAXReader reader=new SAXReader();
 			Document doc=reader.read(is);
-			Element root=doc.getRootElement();//<beans>
+			Element root=doc.getRootElement();
 			Iterator<Element> iter=root.elementIterator();
 			while(iter.hasNext()){
 				Element ele=(Element)iter.next();
 				String id=ele.attributeValue(ID_ATTRIBUTE);
 				String beanClassName=ele.attributeValue(CLASS_ATTRIBUTE);
-				BeanDefinition bd=new GenericBeanDefinition(id,beanClassName);
-				this.beanDefinitionMap.put(id,bd);
+				BeanDefinition bd=new GenericBeanDefinition(id, beanClassName);
+				this.beanDefinitionMap.put(id, bd);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new BeanDefinitionStoreException("error", e);
 		}finally{
 			if(is!=null){
-				try{
+				try {
 					is.close();
-				}catch(IOException e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -55,36 +57,25 @@ public class Defaultbeanfactory implements BeanFactory {
 		
 	}
 
-
-	
+	public BeanDefinition getBeanFactoryDefiniton(String string) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	public Object getBean(String beanID) {
 		BeanDefinition bd=this.getBeanDefinition(beanID);
 		if(bd==null){
-			return null;
+			throw new BeanCreationException("Bean Definition does not exit");
 		}
 		ClassLoader cl=ClassUtils.getDefaultClassLoader();
 		String beanClassName=bd.getBeanClassName();
 		try {
 			Class<?> clz=cl.loadClass(beanClassName);
-			// 无参构造函数创建对象
 			return clz.newInstance();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			// TODO: handle exception
-		}catch (InstantiationException e) {
-			e.printStackTrace();
-			// TODO: handle exception
-		}catch (IllegalAccessException e) {
-			e.printStackTrace();
-			// TODO: handle exception
+		} catch (Exception e) {
+			throw new BeanCreationException(
+					"create bean for"+beanClassName+ "failed ",e);
 		}
-		return null;
-	}
-
-	public BeanDefinition getBeanFactoryDefiniton(String string) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public BeanDefinition getBeanDefinition(String beanID) {
@@ -93,5 +84,6 @@ public class Defaultbeanfactory implements BeanFactory {
 	}
 
 	
-	
+
+
 }
