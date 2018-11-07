@@ -7,11 +7,12 @@ public class GenericBeanDefinition implements BeanDefinition {
 	private String id;
 	// 对应xml文件的class属性
 	private String beanClassName;
+
 	public GenericBeanDefinition(String id, String beanClassName) {
-		
 		this.id = id;
 		this.beanClassName = beanClassName;
 	}
+
 	public String getBeanClassName() {
 		
 		return this.beanClassName;
