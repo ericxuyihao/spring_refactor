@@ -16,9 +16,10 @@ import org.litespring.beans.factory.BeanCreationException;
 import org.litespring.beans.factory.BeanDefinitionStoreException;
 import org.litespring.beans.factory.BeanFactory;
 import org.litespring.beans.factory.config.ConfigurableBeanFactory;
+import org.litespring.context.support.DefaulteSingletonBeanRegistry;
 import org.litespring.util.ClassUtils;
 
-public class DefaultBeanfactory implements ConfigurableBeanFactory,BeanDefinitionRegistry{
+public class DefaultBeanfactory extends DefaulteSingletonBeanRegistry implements ConfigurableBeanFactory,BeanDefinitionRegistry{
     private static final String ID_ATTRIBUTE = "id";
     private static final String CLASS_ATTRIBUTE = "class";
     private final Map<String,BeanDefinition> beanDefinitionMap=
@@ -43,13 +44,25 @@ public class DefaultBeanfactory implements ConfigurableBeanFactory,BeanDefinitio
         if(bd==null){
             return  null;
         }
+        if(bd.isSigleton()){
+            Object bean=this.getSingleton(beanID);
+            if(bean==null){
+                bean=createBean(bd);
+                this.registerSingleton(beanID,bean);
+            }
+            return bean;
+        }
+        return createBean(bd);
+    }
+
+    private Object createBean(BeanDefinition bd) {
         ClassLoader cl=this.getBeanClassLoader();
         String beanClassName=bd.getBeanClassName();
         try {
             Class<?> clz=cl.loadClass(beanClassName);
-            return  clz.newInstance();
+            return clz.newInstance();
         } catch (Exception e) {
-           throw new BeanCreationException("Exception for create bean"+beanClassName);
+            throw new BeanCreationException("create error");
         }
     }
 

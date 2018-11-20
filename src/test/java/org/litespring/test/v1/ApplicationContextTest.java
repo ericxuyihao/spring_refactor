@@ -16,14 +16,14 @@ public class ApplicationContextTest {
     @Test
     public void testGetBean(){
         ApplicationContext ctx=new ClassPathXmlApplicationContext("petstore-v1.xml");
-        PetStoreService petStoreService=(PetStoreService) ctx.getBean("petStore");
+        PetStoreService petStoreService= (PetStoreService) ((ClassPathXmlApplicationContext) ctx).getBean("petStore");
         Assert.assertNotNull(petStoreService);
     }
 
     @Test
     public void testGetBeanFromFileSystemContext(){
             ApplicationContext ctx=new FileSystemXmlApplicationContext("D:\\gitHub\\spring_refactor\\src\\test\\resources\\petstore-v1.xml");
-            PetStoreService petStore=(PetStoreService) ctx.getBean("petStore");
+            PetStoreService petStore=(PetStoreService) ((FileSystemXmlApplicationContext) ctx).getBean("petStore");
             Assert.assertNotNull(petStore);
     }
 
