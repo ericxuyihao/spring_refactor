@@ -15,13 +15,15 @@ import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.factory.BeanCreationException;
 import org.litespring.beans.factory.BeanDefinitionStoreException;
 import org.litespring.beans.factory.BeanFactory;
+import org.litespring.beans.factory.config.ConfigurableBeanFactory;
 import org.litespring.util.ClassUtils;
 
-public class DefaultBeanfactory implements BeanFactory ,BeanDefinitionRegistry{
+public class DefaultBeanfactory implements ConfigurableBeanFactory,BeanDefinitionRegistry{
     private static final String ID_ATTRIBUTE = "id";
     private static final String CLASS_ATTRIBUTE = "class";
     private final Map<String,BeanDefinition> beanDefinitionMap=
             new ConcurrentHashMap<String, BeanDefinition>();
+    private ClassLoader beanClassLoader;
 
 
     public DefaultBeanfactory() {
@@ -41,7 +43,7 @@ public class DefaultBeanfactory implements BeanFactory ,BeanDefinitionRegistry{
         if(bd==null){
             return  null;
         }
-        ClassLoader cl=ClassUtils.getDefaultClassLoader();
+        ClassLoader cl=this.getBeanClassLoader();
         String beanClassName=bd.getBeanClassName();
         try {
             Class<?> clz=cl.loadClass(beanClassName);
@@ -52,8 +54,11 @@ public class DefaultBeanfactory implements BeanFactory ,BeanDefinitionRegistry{
     }
 
 
+    public void setBeanClassLoader(ClassLoader beanClassLoader) {
+        this.beanClassLoader=beanClassLoader;
+    }
 
-
-
-
+    public ClassLoader getBeanClassLoader() {
+        return (this.beanClassLoader!=null?this.beanClassLoader:ClassUtils.getDefaultClassLoader());
+    }
 }
