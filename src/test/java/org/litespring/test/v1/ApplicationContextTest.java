@@ -16,6 +16,7 @@ public class ApplicationContextTest {
     @Test
     public void testGetBean(){
         ApplicationContext ctx=new ClassPathXmlApplicationContext("petstore-v1.xml");
+
         PetStoreService petStoreService= (PetStoreService) ((ClassPathXmlApplicationContext) ctx).getBean("petStore");
         Assert.assertNotNull(petStoreService);
     }
